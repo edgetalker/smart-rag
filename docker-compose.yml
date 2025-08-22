@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # Qdrant向量数据库
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: smart-rag-qdrant
+    ports:
+      - "6333:6333"  # HTTP API端口
+      - "6334:6334"  # gRPC API端口（可选）
+    volumes:
+      - qdrant_data:/qdrant/storage
+      - ./qdrant_config:/qdrant/config  # 可选：自定义配置
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=INFO
+      # 性能优化配置
+      - QDRANT__STORAGE__WRITE_AHEAD_LOG=true
+      - QDRANT__STORAGE__RECOVERY_MODE=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - smart-rag-net
+
+  # Elasticsearch全文搜索
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: smart-rag-elasticsearch
+    ports:
+      - "9200:9200"  # HTTP API端口
+      - "9300:9300"  # 传输端口
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    environment:
+      # 基础配置
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=false
+
+      # 内存配置（根据系统调整）
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+
+      # 性能配置
+      - bootstrap.memory_lock=true
+      - cluster.name=smart-rag-cluster
+      - node.name=smart-rag-node
+
+      # 开发环境配置
+      - action.destructive_requires_name=false
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - smart-rag-net
+
+  # 可选：Kibana (Elasticsearch可视化界面)
+  kibana:
+    image: kibana:8.11.0
+    container_name: smart-rag-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=smart-rag-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    networks:
+      - smart-rag-net
+    profiles:
+      - with-kibana  # 可选启动
+
+# 数据卷
+volumes:
+  qdrant_data:
+    driver: local
+    name: smart-rag-qdrant-data
+  es_data:
+    driver: local
+    name: smart-rag-elasticsearch-data
+
+# 网络
+networks:
+  smart-rag-net:
+    driver: bridge
+    name: smart-rag-network

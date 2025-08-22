@@ -1,0 +1,45 @@
+# Smart RAG 数据源配置
+data_sources:
+  langchain:
+    name: "LangChain"
+    repo_url: "https://github.com/langchain-ai/langchain.git"
+    docs_path: "docs/docs"
+    priority: 1
+    description: "RAG和LLM应用框架文档"
+    expected_files: 3000
+    file_patterns:
+      - "*.md"
+      - "*.mdx"
+    exclude_patterns:
+      - "**/node_modules/**"
+      - "**/build/**"
+      - "**/.git/**"
+
+  fastapi:
+    name: "FastAPI"
+    repo_url: "https://github.com/tiangolo/fastapi.git"
+    docs_path: "docs/en/docs"
+    priority: 2
+    description: "现代Python Web框架文档"
+    expected_files: 200
+    file_patterns:
+      - "*.md"
+    exclude_patterns:
+      - "**/img/**"
+      - "**/assets/**"
+
+
+# 处理配置
+processing:
+  min_content_length: 100        # 最小内容长度
+  max_content_length: 50000      # 最大内容长度
+  preserve_code_blocks: true     # 保留代码块
+  extract_frontmatter: true      # 提取前置元数据
+  maintain_structure: true       # 保持文档结构
+
+# 质量标准
+quality_standards:
+  min_heading_levels: 1          # 最少标题层级
+  max_heading_levels: 6          # 最多标题层级
+  code_block_ratio: 0.3          # 代码块比例上限
+  min_text_ratio: 0.4            # 文本内容比例下限

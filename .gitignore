@@ -1,0 +1,67 @@
+# --- GitHub's Python Template Essentials ---
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+.venv/
+.env/
+
+# --- IDE and Editor Files ---
+# Visual Studio Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# --- Secrets and Environment Variables (VERY IMPORTANT!) ---
+# Never commit your API keys or other secrets
+.env
+*.env.*
+secrets.toml
+
+# --- Local Data and Database Storage ---
+# Local Docker volumes for databases
+qdrant_storage/
+es_data/
+
+# Raw and processed datasets (if they are large)
+# It's better to describe how to get the data in a README
+# than to commit the data itself.
+data/
+processed_data/
+*.json
+*.csv
+
+# --- Log and Temporary Files ---
+*.log
+*.tmp
+
+# --- OS-specific files ---
+.DS_Store
+Thumbs.db
